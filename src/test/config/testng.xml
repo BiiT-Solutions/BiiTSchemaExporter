@@ -1,0 +1,12 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite thread-count="1" verbose="1" name="JpaSchemaExporter">
+	<test name="JpaSchemaExporter" enabled="true" preserve-order="true">
+		<groups>
+			<run>
+			</run>
+		</groups>
+		<classes>
+		</classes>
+	</test>
+</suite>
+
