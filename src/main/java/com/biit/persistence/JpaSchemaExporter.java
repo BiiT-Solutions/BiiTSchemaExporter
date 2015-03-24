@@ -234,6 +234,8 @@ public class JpaSchemaExporter {
 		gen.createDatabaseScript(HibernateDialect.MYSQL, directory, outputDirectory, true);
 		gen.updateDatabaseScript(HibernateDialect.MYSQL, directory, host, port, user, password, databaseName);
 
+		// Add hibernate sequence table.
+		addTextToFile(createHibernateSequenceTable(), directory + File.separator + outputDirectory);
 		// Add extra information from a external script.
 		addTextToFile(readFile(scriptsToAdd, Charset.forName("UTF-8")), directory + File.separator + outputDirectory);
 	}
@@ -242,6 +244,21 @@ public class JpaSchemaExporter {
 		Date ahora = new Date();
 		SimpleDateFormat formateador = new SimpleDateFormat("dd-MM-yyyy_HHmmss");
 		return formateador.format(ahora);
+	}
+
+	/**
+	 * Hibernate databases needs this table.
+	 * 
+	 * @return
+	 */
+	private static String createHibernateSequenceTable() {
+		String table = "\n\tCREATE TABLE `hibernate_sequence` (\n";
+		table += "\t\t`next_val` bigint(20) DEFAULT NULL\n";
+		table += "\t);\n\n";
+		table += "\tLOCK TABLES `hibernate_sequence` WRITE;\n";
+		table += "\tINSERT INTO `hibernate_sequence` VALUES (1);\n";
+		table += "\tUNLOCK TABLES;\n";
+		return table;
 	}
 
 	private static String readFile(String[] files, Charset charset) {
