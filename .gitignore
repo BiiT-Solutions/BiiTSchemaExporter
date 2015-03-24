@@ -11,5 +11,8 @@ widgetsets/
 tmp
 *.zip
 styles.css
-/abcd-core/src/test/resources/generatedRules.drl
 /target
+
+pom.xml.releaseBackup
+release.properties
+
