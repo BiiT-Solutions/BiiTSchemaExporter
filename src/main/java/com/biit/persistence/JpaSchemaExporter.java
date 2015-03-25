@@ -264,10 +264,14 @@ public class JpaSchemaExporter {
 	private static String readFile(String[] files, Charset charset) {
 		StringBuilder result = new StringBuilder("");
 		for (String file : files) {
-			System.out.println("FILE '"+file+"'");
 			result.append("\n");
-			File fileResource = new File(JpaSchemaExporter.class.getClassLoader().getResource(file).getFile());
 
+			File fileResource = new File(file);
+			if (!fileResource.exists()) {
+				// If this class is in a library, in testing the resources file is the home of the project. Add the
+				// complete path.
+				fileResource = new File("src/test/resources/" + file);
+			}
 			try (Scanner scanner = new Scanner(fileResource)) {
 				while (scanner.hasNextLine()) {
 					String line = scanner.nextLine();
