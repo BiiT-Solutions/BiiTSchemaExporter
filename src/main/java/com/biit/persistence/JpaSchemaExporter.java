@@ -264,6 +264,7 @@ public class JpaSchemaExporter {
 	private static String readFile(String[] files, Charset charset) {
 		StringBuilder result = new StringBuilder("");
 		for (String file : files) {
+			System.out.println("FILE '"+file+"'");
 			result.append("\n");
 			File fileResource = new File(JpaSchemaExporter.class.getClassLoader().getResource(file).getFile());
 
