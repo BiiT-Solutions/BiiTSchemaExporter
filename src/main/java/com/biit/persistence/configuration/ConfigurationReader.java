@@ -21,7 +21,8 @@ public class ConfigurationReader extends com.biit.utils.configuration.Configurat
 	private static final String TAG_OUTPUT_FILE = "jpaschemaexporter.output.file";
 	private static final String TAG_SCAN_PACKAGES = "jpaschemaexporter.scan.packages";
 	private static final String TAG_SCRIPTS_TO_ADD = "jpaschemaexporter.add.scripts";
-	private static final String TAG_CLASSES_TO_IGNORE = "jpaschemaexporter.ignore.classes";
+	private static final String TAG_CLASSES_TO_IGNORE_CREATE_DATABASE = "jpaschemaexporter.ignore.classes.create";
+	private static final String TAG_CLASSES_TO_IGNORE_UPDATE_DATABASE = "jpaschemaexporter.ignore.classes.update";
 
 	// Default
 	private static final String DEFAULT_DATABASE_NAME = "database";
@@ -33,7 +34,8 @@ public class ConfigurationReader extends com.biit.utils.configuration.Configurat
 	private static final String DEFAULT_OUTPUT_FILE = "create_mysql.sql";
 	private static final String DEFAULT_SCAN_PACKAGES = "com.biit.persistence";
 	private static final String DEFAULT_SCRIPTS_TO_ADD = "";
-	private static final String DEFAULT_CLASSES_TO_IGNORE = "";
+	private static final String DEFAULT_CLASSES_TO_IGNORE_CREATE_DATABASE = "";
+	private static final String DEFAULT_CLASSES_TO_IGNORE_UPDATE_DATABASE = "";
 
 	private static ConfigurationReader instance;
 
@@ -48,7 +50,8 @@ public class ConfigurationReader extends com.biit.utils.configuration.Configurat
 		addProperty(TAG_OUTPUT_DIRECTORY, DEFAULT_OUTPUT_DIRECTORY);
 		addProperty(TAG_OUTPUT_FILE, DEFAULT_OUTPUT_FILE);
 		addProperty(TAG_SCAN_PACKAGES, DEFAULT_SCAN_PACKAGES);
-		addProperty(TAG_CLASSES_TO_IGNORE, DEFAULT_CLASSES_TO_IGNORE);
+		addProperty(TAG_CLASSES_TO_IGNORE_CREATE_DATABASE, DEFAULT_CLASSES_TO_IGNORE_CREATE_DATABASE);
+		addProperty(TAG_CLASSES_TO_IGNORE_UPDATE_DATABASE, DEFAULT_CLASSES_TO_IGNORE_UPDATE_DATABASE);
 		addProperty(TAG_SCRIPTS_TO_ADD, DEFAULT_SCRIPTS_TO_ADD);
 
 		addPropertiesSource(new PropertiesSourceFile(DATABASE_CONFIG_FILE));
@@ -110,8 +113,12 @@ public class ConfigurationReader extends com.biit.utils.configuration.Configurat
 		return StringConverter.convertToArray(getProperty(TAG_SCAN_PACKAGES));
 	}
 
-	public String[] getClassesToIgnore() {
-		return StringConverter.convertToArray(getProperty(TAG_CLASSES_TO_IGNORE));
+	public String[] getClassesToIgnoreCreatingDatabase() {
+		return StringConverter.convertToArray(getProperty(TAG_CLASSES_TO_IGNORE_CREATE_DATABASE));
+	}
+
+	public String[] getClassesToIgnoreUpdatingDatabase() {
+		return StringConverter.convertToArray(getProperty(TAG_CLASSES_TO_IGNORE_UPDATE_DATABASE));
 	}
 
 	public String[] getScriptsToAdd() {

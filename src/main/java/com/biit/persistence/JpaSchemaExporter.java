@@ -33,7 +33,8 @@ public class JpaSchemaExporter {
 	private static final int ARG_DATABASE_PORT = 6;
 	private static final int ARG_DATABASE_NAME = 7;
 	private static final int ARG_SCRIPTS_TO_ADD = 8;
-	private static final int ARG_CLASSES_TO_IGNORE = 9;
+	private static final int ARG_CLASSES_TO_IGNORE_CREATE_DATABASE = 9;
+	private static final int ARG_CLASSES_TO_IGNORE_UPDATE_DATABASE = 10;
 
 	private Configuration cfg;
 
@@ -157,7 +158,7 @@ public class JpaSchemaExporter {
 	 *            outputFile, args[{@value #ARG_PACKETS_TO_SCAN}] -> packetsToScan args[{@value #ARG_DATABASE_USER}] ->
 	 *            databaseUser, args[{@value #ARG_DATABASE_PASSWORD}] ->databasePassword, args[
 	 *            {@value #ARG_DATABASE_HOST}] -> databaseHost, args[ {@value #ARG_DATABASE_PORT}] -> databasePort,
-	 *            args[ {@value #ARG_CLASSES_TO_IGNORE}] -> ignoreClasses
+	 *            args[ {@value #ARG_CLASSES_TO_IGNORE_CREATE_DATABASE}] -> ignoreClasses
 	 */
 	public static void main(String[] args) {
 		String directory;
@@ -222,16 +223,24 @@ public class JpaSchemaExporter {
 			scriptsToAdd = StringConverter.convertToArray(args[ARG_SCRIPTS_TO_ADD]);
 		}
 
-		String[] classesToIgnore;
-		if (args.length <= ARG_CLASSES_TO_IGNORE) {
-			classesToIgnore = ConfigurationReader.getInstance().getPackageToScan();
+		String[] classesToIgnoreWhenCreatingDatabase;
+		if (args.length <= ARG_CLASSES_TO_IGNORE_CREATE_DATABASE) {
+			classesToIgnoreWhenCreatingDatabase = ConfigurationReader.getInstance().getClassesToIgnoreCreatingDatabase();
 		} else {
-			classesToIgnore = StringConverter.convertToArray(args[ARG_CLASSES_TO_IGNORE]);
+			classesToIgnoreWhenCreatingDatabase = StringConverter.convertToArray(args[ARG_CLASSES_TO_IGNORE_CREATE_DATABASE]);
+		}
+		
+		String[] classesToIgnoreWhenUpdatingDatabase;
+		if (args.length <= ARG_CLASSES_TO_IGNORE_UPDATE_DATABASE) {
+			classesToIgnoreWhenUpdatingDatabase = ConfigurationReader.getInstance().getPackageToScan();
+		} else {
+			classesToIgnoreWhenUpdatingDatabase = StringConverter.convertToArray(args[ARG_CLASSES_TO_IGNORE_UPDATE_DATABASE]);
 		}
 
 		// Launch the JpaSchemaExporter
-		JpaSchemaExporter gen = new JpaSchemaExporter(packetsToScan, classesToIgnore);
+		JpaSchemaExporter gen = new JpaSchemaExporter(packetsToScan, classesToIgnoreWhenCreatingDatabase);
 		gen.createDatabaseScript(HibernateDialect.MYSQL, directory, outputDirectory, true);
+		gen = new JpaSchemaExporter(packetsToScan, classesToIgnoreWhenUpdatingDatabase);
 		gen.updateDatabaseScript(HibernateDialect.MYSQL, directory, host, port, user, password, databaseName);
 
 		// Add hibernate sequence table.
