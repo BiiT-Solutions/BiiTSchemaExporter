@@ -299,10 +299,13 @@ public class JpaSchemaExporter {
 			result.append("\n");
 
 			File fileResource = new File(file);
-			if (!fileResource.exists()) {
+			while (!fileResource.exists()) {
 				// If this class is in a library, in testing the resources file is the home of the project. Add the
 				// complete path.
-				fileResource = new File("../" + file);
+				if (file.indexOf('/') == -1) {
+					break;
+				}
+				fileResource = new File(file.substring(file.indexOf('/') + 1, file.length()));
 				ExporterLogger.warning(JpaSchemaExporter.class.getName(), "'" + file + "' not found! Using '"
 						+ fileResource.getAbsolutePath() + "' instead.");
 			}
