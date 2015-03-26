@@ -302,7 +302,9 @@ public class JpaSchemaExporter {
 			if (!fileResource.exists()) {
 				// If this class is in a library, in testing the resources file is the home of the project. Add the
 				// complete path.
-				fileResource = new File("src/test/resources/" + file);
+				fileResource = new File("../" + file);
+				ExporterLogger.warning(JpaSchemaExporter.class.getName(), "'" + file + "' not found! Using '"
+						+ fileResource.getAbsolutePath() + "' instead.");
 			}
 			try (Scanner scanner = new Scanner(fileResource)) {
 				while (scanner.hasNextLine()) {
