@@ -55,6 +55,7 @@ public class ExporterLogger extends BiitLogger {
 	 */
 	public static void errorMessage(String className, Throwable throwable) {
 		String error = getStackTrace(throwable);
+		System.out.println("[ERROR] " + className + " - " + error);
 		errorMessageNotification(className, error);
 	}
 }
