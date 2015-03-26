@@ -10,9 +10,12 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
 
 import org.hibernate.cfg.Configuration;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
@@ -47,6 +50,7 @@ public class JpaSchemaExporter {
 				}
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			ExporterLogger.errorMessage(JpaSchemaExporter.class.getName(), e);
 		}
 	}
@@ -64,7 +68,9 @@ public class JpaSchemaExporter {
 			URL resource = getResource(packageName, cld);
 			directory = new File(resource.getFile());
 		} catch (NullPointerException ex) {
-			throw new ClassNotFoundException(packageName + " (" + directory + ") does not appear to be a valid package");
+			ex.printStackTrace();
+			throw new ClassNotFoundException(packageName + " (" + directory
+					+ ") does not appear to be a valid package.");
 		}
 		return collectClasses(packageName, directory, classesToIgnore);
 	}
@@ -102,15 +108,21 @@ public class JpaSchemaExporter {
 				}
 			}
 		} else {
-			throw new ClassNotFoundException(packageName + " is not a valid package");
+			throw new ClassNotFoundException(packageName + " is not a valid package.");
 		}
 		// Remove ignored classes.
-		for (String classToRemove : classesToIgnore) {
+		Set<String> classesToRemove = new HashSet<String>(Arrays.asList(classesToIgnore));
+		for (String classToRemove : new HashSet<>(classesToRemove)) {
 			for (Class<?> classAdded : new ArrayList<>(classes)) {
 				if (classAdded.getSimpleName().equals(classToRemove)) {
 					classes.remove(classAdded);
+					classesToRemove.remove(classToRemove);
 				}
 			}
+		}
+		if (!classesToRemove.isEmpty()) {
+			ExporterLogger.warning(JpaSchemaExporter.class.getName(), "Classes '" + classesToRemove
+					+ "' not found in packet. Not ignored.");
 		}
 		return classes;
 	}
@@ -129,7 +141,7 @@ public class JpaSchemaExporter {
 		export.setDelimiter(";");
 		export.setOutputFile(directory + File.separator + outputFile);
 		export.setFormat(true);
-		export.execute(true, false, false, onlyCreation);
+		export.execute(false, false, false, onlyCreation);
 	}
 
 	public void updateDatabaseScript(HibernateDialect dialect, String outputDirectory, String host, String port,
@@ -144,10 +156,16 @@ public class JpaSchemaExporter {
 
 		SchemaUpdate update = new SchemaUpdate(cfg);
 		update.setDelimiter(";");
-		update.setOutputFile(outputDirectory + "updates/update_" + dialect.name().toLowerCase() + "_" + getDate()
-				+ ".sql");
+
+		File directory = new File(outputDirectory + File.separator + "updates");
+		if (!directory.exists()) {
+			directory.mkdirs();
+		}
+
+		update.setOutputFile(outputDirectory + File.separator + "updates" + File.separator + "update_"
+				+ dialect.name().toLowerCase() + "_" + getDate() + ".sql");
 		update.setFormat(true);
-		update.execute(true, true);
+		update.execute(false, true);
 	}
 
 	/**
@@ -158,7 +176,8 @@ public class JpaSchemaExporter {
 	 *            outputFile, args[{@value #ARG_PACKETS_TO_SCAN}] -> packetsToScan args[{@value #ARG_DATABASE_USER}] ->
 	 *            databaseUser, args[{@value #ARG_DATABASE_PASSWORD}] ->databasePassword, args[
 	 *            {@value #ARG_DATABASE_HOST}] -> databaseHost, args[ {@value #ARG_DATABASE_PORT}] -> databasePort,
-	 *            args[ {@value #ARG_CLASSES_TO_IGNORE_CREATE_DATABASE}] -> ignoreClasses
+	 *            args[ {@value #ARG_CLASSES_TO_IGNORE_CREATE_DATABASE}] -> ignoreClassesCreating, args[
+	 *            {@value #ARG_CLASSES_TO_IGNORE_UPDATE_DATABASE}] -> ignoreClassesUpdates
 	 */
 	public static void main(String[] args) {
 		String directory;
@@ -168,11 +187,11 @@ public class JpaSchemaExporter {
 			directory = args[ARG_OUTPUT_DIRECTORY] + File.separator;
 		}
 
-		String outputDirectory;
+		String outputFile;
 		if (args.length <= ARG_OUTPUT_FILE) {
-			outputDirectory = ConfigurationReader.getInstance().getOutputDirectory();
+			outputFile = ConfigurationReader.getInstance().getOutputFile();
 		} else {
-			outputDirectory = args[ARG_OUTPUT_FILE];
+			outputFile = args[ARG_OUTPUT_FILE];
 		}
 
 		String[] packetsToScan;
@@ -225,28 +244,32 @@ public class JpaSchemaExporter {
 
 		String[] classesToIgnoreWhenCreatingDatabase;
 		if (args.length <= ARG_CLASSES_TO_IGNORE_CREATE_DATABASE) {
-			classesToIgnoreWhenCreatingDatabase = ConfigurationReader.getInstance().getClassesToIgnoreCreatingDatabase();
+			classesToIgnoreWhenCreatingDatabase = ConfigurationReader.getInstance()
+					.getClassesToIgnoreCreatingDatabase();
 		} else {
-			classesToIgnoreWhenCreatingDatabase = StringConverter.convertToArray(args[ARG_CLASSES_TO_IGNORE_CREATE_DATABASE]);
+			classesToIgnoreWhenCreatingDatabase = StringConverter
+					.convertToArray(args[ARG_CLASSES_TO_IGNORE_CREATE_DATABASE]);
 		}
-		
+
 		String[] classesToIgnoreWhenUpdatingDatabase;
 		if (args.length <= ARG_CLASSES_TO_IGNORE_UPDATE_DATABASE) {
-			classesToIgnoreWhenUpdatingDatabase = ConfigurationReader.getInstance().getPackageToScan();
+			classesToIgnoreWhenUpdatingDatabase = ConfigurationReader.getInstance()
+					.getClassesToIgnoreUpdatingDatabase();
 		} else {
-			classesToIgnoreWhenUpdatingDatabase = StringConverter.convertToArray(args[ARG_CLASSES_TO_IGNORE_UPDATE_DATABASE]);
+			classesToIgnoreWhenUpdatingDatabase = StringConverter
+					.convertToArray(args[ARG_CLASSES_TO_IGNORE_UPDATE_DATABASE]);
 		}
 
 		// Launch the JpaSchemaExporter
 		JpaSchemaExporter gen = new JpaSchemaExporter(packetsToScan, classesToIgnoreWhenCreatingDatabase);
-		gen.createDatabaseScript(HibernateDialect.MYSQL, directory, outputDirectory, true);
+		gen.createDatabaseScript(HibernateDialect.MYSQL, directory, outputFile, true);
 		gen = new JpaSchemaExporter(packetsToScan, classesToIgnoreWhenUpdatingDatabase);
 		gen.updateDatabaseScript(HibernateDialect.MYSQL, directory, host, port, user, password, databaseName);
 
 		// Add hibernate sequence table.
-		addTextToFile(createHibernateSequenceTable(), directory + File.separator + outputDirectory);
+		addTextToFile(createHibernateSequenceTable(), directory + File.separator + outputFile);
 		// Add extra information from a external script.
-		addTextToFile(readFile(scriptsToAdd, Charset.forName("UTF-8")), directory + File.separator + outputDirectory);
+		addTextToFile(readFile(scriptsToAdd, Charset.forName("UTF-8")), directory + File.separator + outputFile);
 	}
 
 	private static String getDate() {
@@ -298,6 +321,7 @@ public class JpaSchemaExporter {
 		try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(file, true)))) {
 			out.println(text);
 		} catch (IOException e) {
+			ExporterLogger.errorMessage(JpaSchemaExporter.class.getName(), e);
 		}
 	}
 

@@ -16,3 +16,4 @@ styles.css
 pom.xml.releaseBackup
 release.properties
 
+/create_mysql.sql

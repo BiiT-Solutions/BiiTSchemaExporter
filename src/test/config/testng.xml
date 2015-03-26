@@ -3,9 +3,11 @@
 	<test name="JpaSchemaExporter" enabled="true" preserve-order="true">
 		<groups>
 			<run>
+				<include name="jpaTest" />
 			</run>
 		</groups>
 		<classes>
+			<class name="com.biit.persistence.JpaTester" />
 		</classes>
 	</test>
 </suite>
