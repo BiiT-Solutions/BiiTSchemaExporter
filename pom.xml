@@ -17,7 +17,7 @@
 		<maven-resources-plugin.version>2.7</maven-resources-plugin.version>
 		<org.testng.version>6.8.8</org.testng.version>
 		<hibernate.version>RELEASE</hibernate.version>
-		<biit-common-utils.version>[0.2,0.3)</biit-common-utils.version>
+		<biit-common-utils.version>[0.3,0.4)</biit-common-utils.version>
 		<maven-release-plugin.version>2.5.1</maven-release-plugin.version>
 		<maven-scm-provider-gitexe.version>1.9.2</maven-scm-provider-gitexe.version>
 		<project.scm.id>git</project.scm.id>
