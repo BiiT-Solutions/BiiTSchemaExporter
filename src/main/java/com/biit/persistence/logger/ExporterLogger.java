@@ -8,16 +8,14 @@ import com.biit.logger.BiitLogger;
  * Defines basic log behavior. Uses log4j.properties.
  */
 public class ExporterLogger extends BiitLogger {
-	static {
-		setLogger(Logger.getLogger(new Object() {
-		}.getClass().getEnclosingClass()));
-	}
+
+	private static Logger logger = Logger.getLogger(ExporterLogger.class);
 
 	/**
 	 * Events that have business meaning (i.e. creating category, deleting form, ...). To follow user actions.
 	 */
 	public static void info(String className, String message) {
-		info(className + ": " + message);
+		info(logger, className + ": " + message);
 	}
 
 	/**
@@ -26,7 +24,7 @@ public class ExporterLogger extends BiitLogger {
 	 * @param message
 	 */
 	public static void warning(String className, String message) {
-		warning(className + ": " + message);
+		warning(logger, className + ": " + message);
 	}
 
 	/**
@@ -34,7 +32,7 @@ public class ExporterLogger extends BiitLogger {
 	 * connection, etc.
 	 */
 	public static void debug(String className, String message) {
-		debug(className + ": " + message);
+		debug(logger, className + ": " + message);
 	}
 
 	/**
@@ -43,7 +41,7 @@ public class ExporterLogger extends BiitLogger {
 	 * @param message
 	 */
 	public static void severe(String className, String message) {
-		severe(className + ": " + message);
+		severe(logger, className + ": " + message);
 	}
 
 	/**
@@ -55,7 +53,6 @@ public class ExporterLogger extends BiitLogger {
 	 */
 	public static void errorMessage(String className, Throwable throwable) {
 		String error = getStackTrace(throwable);
-		System.out.println("[ERROR] " + className + " - " + error);
-		errorMessageNotification(className, error);
+		errorMessageNotification(logger, className, error);
 	}
 }
