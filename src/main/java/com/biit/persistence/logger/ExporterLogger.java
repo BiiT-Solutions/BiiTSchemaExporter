@@ -15,7 +15,7 @@ public class ExporterLogger extends BiitLogger {
 	 * Events that have business meaning (i.e. creating category, deleting form, ...). To follow user actions.
 	 */
 	public static void info(String className, String message) {
-		info(logger, className + ": " + message);
+		info(logger, className, message);
 	}
 
 	/**
@@ -24,7 +24,7 @@ public class ExporterLogger extends BiitLogger {
 	 * @param message
 	 */
 	public static void warning(String className, String message) {
-		warning(logger, className + ": " + message);
+		warning(logger, className, message);
 	}
 
 	/**
@@ -32,7 +32,7 @@ public class ExporterLogger extends BiitLogger {
 	 * connection, etc.
 	 */
 	public static void debug(String className, String message) {
-		debug(logger, className + ": " + message);
+		debug(logger, className, message);
 	}
 
 	/**
@@ -41,7 +41,7 @@ public class ExporterLogger extends BiitLogger {
 	 * @param message
 	 */
 	public static void severe(String className, String message) {
-		severe(logger, className + ": " + message);
+		severe(logger, className, message);
 	}
 
 	/**
@@ -52,7 +52,6 @@ public class ExporterLogger extends BiitLogger {
 	 * @param throwable
 	 */
 	public static void errorMessage(String className, Throwable throwable) {
-		String error = getStackTrace(throwable);
-		errorMessageNotification(logger, className, error);
+		errorMessageNotification(logger, className, getStackTrace(throwable));
 	}
 }
