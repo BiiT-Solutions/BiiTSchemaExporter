@@ -20,9 +20,11 @@ public class ConfigurationReader extends com.biit.utils.configuration.Configurat
 	private static final String TAG_OUTPUT_DIRECTORY = "jpaschemaexporter.output.directory";
 	private static final String TAG_OUTPUT_FILE = "jpaschemaexporter.output.file";
 	private static final String TAG_SCAN_PACKAGES = "jpaschemaexporter.scan.packages";
+	private static final String TAG_SCAN_JAR = "jpaschemaexporter.scan.jar";
 	private static final String TAG_SCRIPTS_TO_ADD = "jpaschemaexporter.add.scripts";
 	private static final String TAG_CLASSES_TO_IGNORE_CREATE_DATABASE = "jpaschemaexporter.ignore.classes.create";
 	private static final String TAG_CLASSES_TO_IGNORE_UPDATE_DATABASE = "jpaschemaexporter.ignore.classes.update";
+
 
 	// Default
 	private static final String DEFAULT_DATABASE_NAME = "database";
@@ -34,6 +36,7 @@ public class ConfigurationReader extends com.biit.utils.configuration.Configurat
 	private static final String DEFAULT_OUTPUT_FILE = "create_mysql.sql";
 	private static final String DEFAULT_SCAN_PACKAGES = "com.biit.persistence";
 	private static final String DEFAULT_SCRIPTS_TO_ADD = "";
+	private static final String DEFAULT_JARS_TO_ADD = "";
 	private static final String DEFAULT_CLASSES_TO_IGNORE_CREATE_DATABASE = "";
 	private static final String DEFAULT_CLASSES_TO_IGNORE_UPDATE_DATABASE = "";
 
@@ -53,6 +56,7 @@ public class ConfigurationReader extends com.biit.utils.configuration.Configurat
 		addProperty(TAG_CLASSES_TO_IGNORE_CREATE_DATABASE, DEFAULT_CLASSES_TO_IGNORE_CREATE_DATABASE);
 		addProperty(TAG_CLASSES_TO_IGNORE_UPDATE_DATABASE, DEFAULT_CLASSES_TO_IGNORE_UPDATE_DATABASE);
 		addProperty(TAG_SCRIPTS_TO_ADD, DEFAULT_SCRIPTS_TO_ADD);
+		addProperty(TAG_SCAN_JAR, DEFAULT_JARS_TO_ADD);
 
 		addPropertiesSource(new PropertiesSourceFile(DATABASE_CONFIG_FILE));
 		addPropertiesSource(new SystemVariablePropertiesSourceFile(ABCD_SYSTEM_VARIABLE_CONFIG, DATABASE_CONFIG_FILE));
@@ -111,6 +115,10 @@ public class ConfigurationReader extends com.biit.utils.configuration.Configurat
 
 	public String[] getPackageToScan() {
 		return StringConverter.convertToArray(getProperty(TAG_SCAN_PACKAGES));
+	}
+	
+	public String[] getJarsInScan() {
+		return StringConverter.convertToArray(getProperty(TAG_SCAN_JAR));
 	}
 
 	public String[] getClassesToIgnoreCreatingDatabase() {
