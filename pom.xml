@@ -22,7 +22,6 @@
 		<maven-release-plugin.version>2.5.1</maven-release-plugin.version>
 		<maven-scm-provider-gitexe.version>1.9.2</maven-scm-provider-gitexe.version>
 		<project.scm.id>git</project.scm.id>
-		<form.structure.version>[0.3, 0.4)</form.structure.version>
 	</properties>
 
 	<scm>
@@ -57,12 +56,6 @@
 			<groupId>org.testng</groupId>
 			<artifactId>testng</artifactId>
 			<version>${org.testng.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.biit</groupId>
-			<artifactId>form-structure</artifactId>
-			<version>${form.structure.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
