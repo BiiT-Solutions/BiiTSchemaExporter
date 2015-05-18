@@ -44,6 +44,10 @@ public class JpaSchemaExporter {
 
 	private Configuration hibernateConfiguration;
 
+	private static String directory, outputFile, user, password, host, port, databaseName;
+	private static String[] packetsToScan, scriptsToAdd, classesToIgnoreWhenCreatingDatabase,
+			classesToIgnoreWhenUpdatingDatabase;
+
 	public JpaSchemaExporter(String[] packagesName, String[] classesToIgnore) {
 		hibernateConfiguration = new Configuration();
 		try {
@@ -191,7 +195,8 @@ public class JpaSchemaExporter {
 		hibernateConfiguration.setProperty("hibernate.dialect", dialect.getDialectClass());
 		hibernateConfiguration.setProperty("hibernate.show_sql", "false");
 		hibernateConfiguration.setProperty("hibernate.connection.driver_class", dialect.getDriver());
-		hibernateConfiguration.setProperty("hibernate.connection.url", "jdbc:mysql://" + host + ":" + port + "/" + databaseName);
+		hibernateConfiguration.setProperty("hibernate.connection.url", "jdbc:mysql://" + host + ":" + port + "/"
+				+ databaseName);
 		hibernateConfiguration.setProperty("hibernate.connection.username", username);
 		hibernateConfiguration.setProperty("hibernate.connection.password", password);
 
@@ -221,69 +226,78 @@ public class JpaSchemaExporter {
 	 *            {@value #ARG_CLASSES_TO_IGNORE_UPDATE_DATABASE}] -> ignoreClassesUpdates
 	 */
 	public static void main(String[] args) {
-		String directory;
+		setArguments(args);
+
+		// Launch the JpaSchemaExporter
+		JpaSchemaExporter gen = new JpaSchemaExporter(getPacketsToScan(), getClassesToIgnoreWhenCreatingDatabase());
+		gen.createDatabaseScript(HibernateDialect.MYSQL, getDirectory(), getOutputFile(), true);
+		gen = new JpaSchemaExporter(getPacketsToScan(), getClassesToIgnoreWhenUpdatingDatabase());
+		gen.updateDatabaseScript(HibernateDialect.MYSQL, getDirectory(), getHost(), getPort(), getUser(),
+				getPassword(), getDatabaseName());
+
+		// Add hibernate sequence table.
+		addTextToFile(createHibernateSequenceTable(), getDirectory() + File.separator + getOutputFile());
+		// Add extra information from a external script.
+		addTextToFile(readFile(getScriptsToAdd(), Charset.forName("UTF-8")), getDirectory() + File.separator
+				+ getOutputFile());
+	}
+
+	protected static void setArguments(String[] args) {
+
 		if (args.length <= ARG_OUTPUT_DIRECTORY) {
 			directory = ConfigurationReader.getInstance().getOutputDirectory();
 		} else {
 			directory = args[ARG_OUTPUT_DIRECTORY] + File.separator;
 		}
 
-		String outputFile;
 		if (args.length <= ARG_OUTPUT_FILE) {
 			outputFile = ConfigurationReader.getInstance().getOutputFile();
 		} else {
 			outputFile = args[ARG_OUTPUT_FILE];
 		}
 
-		String[] packetsToScan;
 		if (args.length <= ARG_PACKETS_TO_SCAN) {
 			packetsToScan = ConfigurationReader.getInstance().getPackageToScan();
 		} else {
 			packetsToScan = StringConverter.convertToArray(args[ARG_PACKETS_TO_SCAN]);
 		}
 
-		String user;
 		if (args.length <= ARG_DATABASE_USER) {
 			user = ConfigurationReader.getInstance().getDatabaseUser();
 		} else {
 			user = args[ARG_DATABASE_USER];
 		}
-		String password;
+
 		if (args.length < ARG_DATABASE_PASSWORD) {
 			password = ConfigurationReader.getInstance().getDatabasePassword();
 		} else {
 			password = args[ARG_DATABASE_PASSWORD];
 		}
 
-		String host;
 		if (args.length <= ARG_DATABASE_HOST) {
 			host = ConfigurationReader.getInstance().getDatabaseHost();
 		} else {
 			host = args[ARG_DATABASE_HOST];
 		}
 
-		String port;
 		if (args.length <= ARG_DATABASE_PORT) {
 			port = ConfigurationReader.getInstance().getDatabasePort();
 		} else {
 			port = args[ARG_DATABASE_PORT];
 		}
 
-		String databaseName;
 		if (args.length <= ARG_DATABASE_NAME) {
 			databaseName = ConfigurationReader.getInstance().getDatabaseName();
 		} else {
 			databaseName = args[ARG_DATABASE_NAME];
 		}
 
-		String[] scriptsToAdd;
 		if (args.length <= ARG_SCRIPTS_TO_ADD) {
 			scriptsToAdd = ConfigurationReader.getInstance().getScriptsToAdd();
 		} else {
 			scriptsToAdd = StringConverter.convertToArray(args[ARG_SCRIPTS_TO_ADD]);
 		}
 
-		String[] classesToIgnoreWhenCreatingDatabase;
 		if (args.length <= ARG_CLASSES_TO_IGNORE_CREATE_DATABASE) {
 			classesToIgnoreWhenCreatingDatabase = ConfigurationReader.getInstance()
 					.getClassesToIgnoreCreatingDatabase();
@@ -292,7 +306,6 @@ public class JpaSchemaExporter {
 					.convertToArray(args[ARG_CLASSES_TO_IGNORE_CREATE_DATABASE]);
 		}
 
-		String[] classesToIgnoreWhenUpdatingDatabase;
 		if (args.length <= ARG_CLASSES_TO_IGNORE_UPDATE_DATABASE) {
 			classesToIgnoreWhenUpdatingDatabase = ConfigurationReader.getInstance()
 					.getClassesToIgnoreUpdatingDatabase();
@@ -300,17 +313,6 @@ public class JpaSchemaExporter {
 			classesToIgnoreWhenUpdatingDatabase = StringConverter
 					.convertToArray(args[ARG_CLASSES_TO_IGNORE_UPDATE_DATABASE]);
 		}
-
-		// Launch the JpaSchemaExporter
-		JpaSchemaExporter gen = new JpaSchemaExporter(packetsToScan, classesToIgnoreWhenCreatingDatabase);
-		gen.createDatabaseScript(HibernateDialect.MYSQL, directory, outputFile, true);
-		gen = new JpaSchemaExporter(packetsToScan, classesToIgnoreWhenUpdatingDatabase);
-		gen.updateDatabaseScript(HibernateDialect.MYSQL, directory, host, port, user, password, databaseName);
-
-		// Add hibernate sequence table.
-		addTextToFile(createHibernateSequenceTable(), directory + File.separator + outputFile);
-		// Add extra information from a external script.
-		addTextToFile(readFile(scriptsToAdd, Charset.forName("UTF-8")), directory + File.separator + outputFile);
 	}
 
 	private static String getDate() {
@@ -324,7 +326,7 @@ public class JpaSchemaExporter {
 	 * 
 	 * @return
 	 */
-	private static String createHibernateSequenceTable() {
+	protected static String createHibernateSequenceTable() {
 		String table = "\n\tCREATE TABLE `hibernate_sequence` (\n";
 		table += "\t\t`next_val` bigint(20) DEFAULT NULL\n";
 		table += "\t);\n\n";
@@ -334,7 +336,7 @@ public class JpaSchemaExporter {
 		return table;
 	}
 
-	private static String readFile(String[] files, Charset charset) {
+	protected static String readFile(String[] files, Charset charset) {
 		StringBuilder result = new StringBuilder("");
 		for (String file : files) {
 			result.append("\n");
@@ -363,7 +365,7 @@ public class JpaSchemaExporter {
 		return result.toString();
 	}
 
-	private static void addTextToFile(String text, String file) {
+	protected static void addTextToFile(String text, String file) {
 		try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(file, true)))) {
 			out.println(text);
 		} catch (IOException e) {
@@ -373,6 +375,58 @@ public class JpaSchemaExporter {
 
 	protected Configuration getHibernateConfiguration() {
 		return hibernateConfiguration;
+	}
+
+	protected Class getSchemaExporterClass() {
+		return JpaSchemaExporter.class;
+	}
+
+	public static String getDirectory() {
+		return directory;
+	}
+
+	public static String getOutputFile() {
+		return outputFile;
+	}
+
+	public static String getUser() {
+		return user;
+	}
+
+	public static String getPassword() {
+		return password;
+	}
+
+	public static String getHost() {
+		return host;
+	}
+
+	public static String getPort() {
+		return port;
+	}
+
+	public static String[] getPacketsToScan() {
+		return packetsToScan;
+	}
+
+	public static String[] getScriptsToAdd() {
+		return scriptsToAdd;
+	}
+
+	public static String getDatabaseName() {
+		return databaseName;
+	}
+
+	public static String[] getClassesToIgnoreWhenCreatingDatabase() {
+		return classesToIgnoreWhenCreatingDatabase;
+	}
+
+	public static String[] getClassesToIgnoreWhenUpdatingDatabase() {
+		return classesToIgnoreWhenUpdatingDatabase;
+	}
+
+	public static void setPacketsToScan(String[] packetsToScan) {
+		JpaSchemaExporter.packetsToScan = packetsToScan;
 	}
 
 }
