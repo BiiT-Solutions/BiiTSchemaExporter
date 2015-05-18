@@ -24,8 +24,6 @@ public class JpaTester {
 		String port = ConfigurationReader.getInstance().getDatabasePort();
 
 		String databaseName = ConfigurationReader.getInstance().getDatabaseName();
-		
-		String[] includedJars = ConfigurationReader.getInstance().getJarsInScan();
 
 		// String[] scriptsToAdd = ConfigurationReader.getInstance().getScriptsToAdd();
 
@@ -36,9 +34,9 @@ public class JpaTester {
 				.getClassesToIgnoreUpdatingDatabase();
 
 		// Launch the JpaSchemaExporter
-		JpaSchemaExporter gen = new JpaSchemaExporter(packetsToScan, classesToIgnoreWhenCreatingDatabase, includedJars);
+		JpaSchemaExporter gen = new JpaSchemaExporter(packetsToScan, classesToIgnoreWhenCreatingDatabase);
 		gen.createDatabaseScript(HibernateDialect.MYSQL, directory, outputFile, true);
-		gen = new JpaSchemaExporter(packetsToScan, classesToIgnoreWhenUpdatingDatabase, includedJars);
+		gen = new JpaSchemaExporter(packetsToScan, classesToIgnoreWhenUpdatingDatabase);
 		gen.updateDatabaseScript(HibernateDialect.MYSQL, directory, host, port, user, password, databaseName);
 	}
 

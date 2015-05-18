@@ -33,30 +33,46 @@ public class JpaSchemaExporter {
 	private static final int ARG_OUTPUT_DIRECTORY = 0;
 	private static final int ARG_OUTPUT_FILE = 1;
 	private static final int ARG_PACKETS_TO_SCAN = 2;
-	private static final int ARG_INCLUDE_JAR_IN_SCAN = 3;
-	private static final int ARG_DATABASE_USER = 4;
-	private static final int ARG_DATABASE_PASSWORD = 5;
-	private static final int ARG_DATABASE_HOST = 6;
-	private static final int ARG_DATABASE_PORT = 7;
-	private static final int ARG_DATABASE_NAME = 8;
-	private static final int ARG_SCRIPTS_TO_ADD = 9;
-	private static final int ARG_CLASSES_TO_IGNORE_CREATE_DATABASE = 10;
-	private static final int ARG_CLASSES_TO_IGNORE_UPDATE_DATABASE = 11;
+	private static final int ARG_DATABASE_USER = 3;
+	private static final int ARG_DATABASE_PASSWORD = 4;
+	private static final int ARG_DATABASE_HOST = 5;
+	private static final int ARG_DATABASE_PORT = 6;
+	private static final int ARG_DATABASE_NAME = 7;
+	private static final int ARG_SCRIPTS_TO_ADD = 8;
+	private static final int ARG_CLASSES_TO_IGNORE_CREATE_DATABASE = 9;
+	private static final int ARG_CLASSES_TO_IGNORE_UPDATE_DATABASE = 10;
 
 	private Configuration cfg;
 
-	public JpaSchemaExporter(String[] packagesName, String[] classesToIgnore, String[] includeJars) {
+	public JpaSchemaExporter(String[] packagesName, String[] classesToIgnore) {
 		cfg = new Configuration();
 		try {
-			// Get classes in dependencies.
-			for (Class clazz : getClassesInJar(packagesName, includeJars)) {
-				cfg.addAnnotatedClass(clazz);
-			}
+			Set<Class> classes = new HashSet<>();
 			// Get classes in project.
 			for (int i = 0; i < packagesName.length; i++) {
-				for (Class clazz : getClassesInProject(packagesName[i], classesToIgnore)) {
-					cfg.addAnnotatedClass(clazz);
+				for (Class clazz : getClassesInProject(packagesName[i])) {
+					classes.add(clazz);
 				}
+			}
+
+			// Remove ignored classes.
+			Set<String> classesToRemove = new HashSet<String>(Arrays.asList(classesToIgnore));
+			for (String classToRemove : new HashSet<>(classesToRemove)) {
+				for (Class<?> classAdded : new ArrayList<>(classes)) {
+					if (classAdded.getSimpleName().equals(classToRemove)) {
+						classes.remove(classAdded);
+					}
+				}
+			}
+
+			// Add to hibernate configuration.
+			for (Class clazz : classes) {
+				cfg.addAnnotatedClass(clazz);
+			}
+
+			if (!classesToRemove.isEmpty()) {
+				ExporterLogger.warning(JpaSchemaExporter.class.getName(), "Classes '" + classesToRemove
+						+ "' not found in packet. Not ignored.");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -65,59 +81,30 @@ public class JpaSchemaExporter {
 	}
 
 	/**
-	 * Search for all classes in a Jar file.
-	 * 
-	 * @param packageName
-	 * @param includeJars
-	 * @return
-	 */
-	private List<Class> getClassesInJar(String[] packageNames, String[] includeJars) {
-		List<Class> classes = new ArrayList<>();
-		for (String jarFileName : includeJars) {
-			try (JarFile jarFile = new JarFile(jarFileName)) {
-				Enumeration<JarEntry> entries = jarFile.entries();
-				while (entries.hasMoreElements()) {
-					JarEntry jarEntry = (JarEntry) entries.nextElement();
-					for (String packageName : packageNames) {
-						if (jarEntry.getName().endsWith(".class")) {
-							String classFile = jarEntry.getName().replaceAll("/", "\\.");
-							if (classFile.startsWith(packageName)) {
-								try {
-									classes.add(Class.forName(classFile.substring(0,
-											classFile.length() - ".class".length())));
-								} catch (ClassNotFoundException e) {
-									e.printStackTrace();
-								}
-							}
-						}
-					}
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-				ExporterLogger.errorMessage(JpaSchemaExporter.class.getName(), e);
-			}
-		}
-		return classes;
-	}
-
-	/**
 	 * Utility method used to fetch Class list based on a package name.
 	 * 
 	 * @param packageName
 	 *            should be the package containing your annotated beans.
 	 */
-	private List<Class> getClassesInProject(String packageName, String[] classesToIgnore) throws ClassNotFoundException {
+	private List<Class> getClassesInProject(String packageName) throws ClassNotFoundException {
 		File directory = null;
 		try {
 			ClassLoader cld = getClassLoader();
 			URL resource = getResource(packageName, cld);
-			directory = new File(resource.getFile());
+			// Resource of the project.
+			if (!resource.getPath().contains("jar!")) {
+				directory = new File(resource.getFile());
+				return collectClasses(packageName, directory);
+			} else {
+				// Class inside a dependency JAR.
+				String jarPath = resource.getPath().substring("file:".length(), resource.getPath().indexOf("!"));
+				return getClassesInJar(jarPath, packageName);
+			}
 		} catch (NullPointerException ex) {
 			ex.printStackTrace();
 			throw new ClassNotFoundException(packageName + " (" + directory
 					+ ") does not appear to be a valid package.");
 		}
-		return collectClasses(packageName, directory, classesToIgnore);
 	}
 
 	private ClassLoader getClassLoader() throws ClassNotFoundException {
@@ -137,10 +124,34 @@ public class JpaSchemaExporter {
 		return resource;
 	}
 
-	private List<Class> collectClasses(String packageName, File directory, String[] classesToIgnore)
-			throws ClassNotFoundException {
+	private List<Class> getClassesInJar(String jarPath, String packetName) {
+		List<Class> classes = new ArrayList<>();
+		try (JarFile jarFile = new JarFile(jarPath)) {
+			Enumeration<JarEntry> entries = jarFile.entries();
+			while (entries.hasMoreElements()) {
+				JarEntry jarEntry = (JarEntry) entries.nextElement();
+				if (jarEntry.getName().endsWith(".class")) {
+					String classFile = jarEntry.getName().replaceAll("/", "\\.");
+					if (classFile.startsWith(packetName)) {
+						try {
+							classes.add(Class.forName(classFile.substring(0, classFile.length() - ".class".length())));
+						} catch (ClassNotFoundException e) {
+							e.printStackTrace();
+							ExporterLogger.errorMessage(JpaSchemaExporter.class.getName(), e);
+						}
+					}
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			ExporterLogger.errorMessage(JpaSchemaExporter.class.getName(), e);
+		}
+		return classes;
+	}
+
+	private List<Class> collectClasses(String packageName, File directory) throws ClassNotFoundException {
 		List<Class> classes = new ArrayList<Class>();
-		if (directory.exists()) {
+		if (directory != null && directory.exists()) {
 			String[] files = directory.list();
 			for (String fileName : files) {
 				File subdirectory = new File(directory.getPath() + File.separator + fileName);
@@ -150,23 +161,9 @@ public class JpaSchemaExporter {
 							+ fileName.substring(0, fileName.length() - ".class".length())));
 				} else if (subdirectory.isDirectory()) {
 					// Subpacket.
-					classes.addAll(collectClasses(packageName + '.' + fileName, subdirectory, classesToIgnore));
+					classes.addAll(collectClasses(packageName + '.' + fileName, subdirectory));
 				}
 			}
-		}
-		// Remove ignored classes.
-		Set<String> classesToRemove = new HashSet<String>(Arrays.asList(classesToIgnore));
-		for (String classToRemove : new HashSet<>(classesToRemove)) {
-			for (Class<?> classAdded : new ArrayList<>(classes)) {
-				if (classAdded.getSimpleName().equals(classToRemove)) {
-					classes.remove(classAdded);
-					classesToRemove.remove(classToRemove);
-				}
-			}
-		}
-		if (!classesToRemove.isEmpty()) {
-			ExporterLogger.warning(JpaSchemaExporter.class.getName(), "Classes '" + classesToRemove
-					+ "' not found in packet. Not ignored.");
 		}
 		return classes;
 	}
@@ -245,13 +242,6 @@ public class JpaSchemaExporter {
 			packetsToScan = StringConverter.convertToArray(args[ARG_PACKETS_TO_SCAN]);
 		}
 
-		String[] jarsToScan;
-		if (args.length <= ARG_INCLUDE_JAR_IN_SCAN) {
-			jarsToScan = ConfigurationReader.getInstance().getJarsInScan();
-		} else {
-			jarsToScan = StringConverter.convertToArray(args[ARG_INCLUDE_JAR_IN_SCAN]);
-		}
-
 		String user;
 		if (args.length <= ARG_DATABASE_USER) {
 			user = ConfigurationReader.getInstance().getDatabaseUser();
@@ -312,9 +302,9 @@ public class JpaSchemaExporter {
 		}
 
 		// Launch the JpaSchemaExporter
-		JpaSchemaExporter gen = new JpaSchemaExporter(packetsToScan, classesToIgnoreWhenCreatingDatabase, jarsToScan);
+		JpaSchemaExporter gen = new JpaSchemaExporter(packetsToScan, classesToIgnoreWhenCreatingDatabase);
 		gen.createDatabaseScript(HibernateDialect.MYSQL, directory, outputFile, true);
-		gen = new JpaSchemaExporter(packetsToScan, classesToIgnoreWhenUpdatingDatabase, jarsToScan);
+		gen = new JpaSchemaExporter(packetsToScan, classesToIgnoreWhenUpdatingDatabase);
 		gen.updateDatabaseScript(HibernateDialect.MYSQL, directory, host, port, user, password, databaseName);
 
 		// Add hibernate sequence table.
