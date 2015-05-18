@@ -42,10 +42,10 @@ public class JpaSchemaExporter {
 	private static final int ARG_CLASSES_TO_IGNORE_CREATE_DATABASE = 9;
 	private static final int ARG_CLASSES_TO_IGNORE_UPDATE_DATABASE = 10;
 
-	private Configuration cfg;
+	private Configuration hibernateConfiguration;
 
 	public JpaSchemaExporter(String[] packagesName, String[] classesToIgnore) {
-		cfg = new Configuration();
+		hibernateConfiguration = new Configuration();
 		try {
 			Set<Class> classes = new HashSet<>();
 			// Get classes in project.
@@ -67,7 +67,7 @@ public class JpaSchemaExporter {
 
 			// Add to hibernate configuration.
 			for (Class clazz : classes) {
-				cfg.addAnnotatedClass(clazz);
+				hibernateConfiguration.addAnnotatedClass(clazz);
 			}
 
 			if (!classesToRemove.isEmpty()) {
@@ -175,10 +175,10 @@ public class JpaSchemaExporter {
 	 * @param directory
 	 */
 	public void createDatabaseScript(HibernateDialect dialect, String directory, String outputFile, boolean onlyCreation) {
-		cfg.setProperty("hibernate.hbm2ddl.auto", "create");
-		cfg.setProperty("hibernate.dialect", dialect.getDialectClass());
-		cfg.setProperty("hibernate.show_sql", "false");
-		SchemaExport export = new SchemaExport(cfg);
+		hibernateConfiguration.setProperty("hibernate.hbm2ddl.auto", "create");
+		hibernateConfiguration.setProperty("hibernate.dialect", dialect.getDialectClass());
+		hibernateConfiguration.setProperty("hibernate.show_sql", "false");
+		SchemaExport export = new SchemaExport(hibernateConfiguration);
 		export.setDelimiter(";");
 		export.setOutputFile(directory + File.separator + outputFile);
 		export.setFormat(true);
@@ -187,15 +187,15 @@ public class JpaSchemaExporter {
 
 	public void updateDatabaseScript(HibernateDialect dialect, String outputDirectory, String host, String port,
 			String username, String password, String databaseName) {
-		cfg.setProperty("hibernate.hbm2ddl.auto", "update");
-		cfg.setProperty("hibernate.dialect", dialect.getDialectClass());
-		cfg.setProperty("hibernate.show_sql", "false");
-		cfg.setProperty("hibernate.connection.driver_class", dialect.getDriver());
-		cfg.setProperty("hibernate.connection.url", "jdbc:mysql://" + host + ":" + port + "/" + databaseName);
-		cfg.setProperty("hibernate.connection.username", username);
-		cfg.setProperty("hibernate.connection.password", password);
+		hibernateConfiguration.setProperty("hibernate.hbm2ddl.auto", "update");
+		hibernateConfiguration.setProperty("hibernate.dialect", dialect.getDialectClass());
+		hibernateConfiguration.setProperty("hibernate.show_sql", "false");
+		hibernateConfiguration.setProperty("hibernate.connection.driver_class", dialect.getDriver());
+		hibernateConfiguration.setProperty("hibernate.connection.url", "jdbc:mysql://" + host + ":" + port + "/" + databaseName);
+		hibernateConfiguration.setProperty("hibernate.connection.username", username);
+		hibernateConfiguration.setProperty("hibernate.connection.password", password);
 
-		SchemaUpdate update = new SchemaUpdate(cfg);
+		SchemaUpdate update = new SchemaUpdate(hibernateConfiguration);
 		update.setDelimiter(";");
 
 		File directory = new File(outputDirectory + File.separator + "updates");
@@ -369,6 +369,10 @@ public class JpaSchemaExporter {
 		} catch (IOException e) {
 			ExporterLogger.errorMessage(JpaSchemaExporter.class.getName(), e);
 		}
+	}
+
+	protected Configuration getHibernateConfiguration() {
+		return hibernateConfiguration;
 	}
 
 }
