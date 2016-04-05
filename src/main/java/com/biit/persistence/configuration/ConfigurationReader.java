@@ -3,7 +3,7 @@ package com.biit.persistence.configuration;
 import com.biit.persistence.logger.ExporterLogger;
 import com.biit.utils.configuration.PropertiesSourceFile;
 import com.biit.utils.configuration.SystemVariablePropertiesSourceFile;
-import com.biit.utils.configuration.exception.PropertyNotFoundException;
+import com.biit.utils.configuration.exceptions.PropertyNotFoundException;
 import com.biit.utils.string.StringConverter;
 
 public class ConfigurationReader extends com.biit.utils.configuration.ConfigurationReader {
@@ -24,7 +24,6 @@ public class ConfigurationReader extends com.biit.utils.configuration.Configurat
 	private static final String TAG_SCRIPTS_TO_ADD = "jpaschemaexporter.add.scripts";
 	private static final String TAG_CLASSES_TO_IGNORE_CREATE_DATABASE = "jpaschemaexporter.ignore.classes.create";
 	private static final String TAG_CLASSES_TO_IGNORE_UPDATE_DATABASE = "jpaschemaexporter.ignore.classes.update";
-
 
 	// Default
 	private static final String DEFAULT_DATABASE_NAME = "database";
@@ -116,7 +115,7 @@ public class ConfigurationReader extends com.biit.utils.configuration.Configurat
 	public String[] getPackageToScan() {
 		return StringConverter.convertToArray(getProperty(TAG_SCAN_PACKAGES));
 	}
-	
+
 	public String[] getJarsInScan() {
 		return StringConverter.convertToArray(getProperty(TAG_SCAN_JAR));
 	}
