@@ -24,8 +24,8 @@
 	</properties>
 
 	<scm>
-		<connection>scm:git:dev.biit-solutions.com:BiiTSchemaExporter.git</connection>
-		<developerConnection>scm:git:dev.biit-solutions.com:BiiTSchemaExporter.git</developerConnection>
+		<connection>scm:git:git.biit-solutions.com:BiiTSchemaExporter.git</connection>
+		<developerConnection>scm:git:git.biit-solutions.com:BiiTSchemaExporter.git</developerConnection>
 		<tag>jpa-schema-exporter</tag>
 	</scm>
 
@@ -33,7 +33,7 @@
 		<repository>
 			<id>central</id>
 			<name>biit-releases</name>
-			<url>https://dev.biit-solutions.com:8443/mavenartifactory/ext-release-local</url>
+			<url>https://git.biit-solutions.com:8443/mavenartifactory/ext-release-local</url>
 		</repository>
 	</distributionManagement>
 
