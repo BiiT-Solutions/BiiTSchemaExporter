@@ -32,8 +32,8 @@
 	<distributionManagement>
 		<repository>
 			<id>central</id>
-			<name>biit-releases</name>
-			<url>https://git.biit-solutions.com:8443/artifactory/ext-release-local</url>
+			<name>libs-releases</name>
+			<url>https://git.biit-solutions.com:8443/artifactory/libs-release</url>
 		</repository>
 	</distributionManagement>
 
