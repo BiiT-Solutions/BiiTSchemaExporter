@@ -12,6 +12,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
@@ -20,9 +21,11 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import org.hibernate.cfg.Configuration;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.hibernate.tool.hbm2ddl.SchemaUpdate;
+import org.hibernate.tool.schema.TargetType;
 
 import com.biit.persistence.configuration.ConfigurationReader;
 import com.biit.persistence.logger.ExporterLogger;
@@ -42,14 +45,12 @@ public class JpaSchemaExporter {
 	private static final int ARG_CLASSES_TO_IGNORE_CREATE_DATABASE = 9;
 	private static final int ARG_CLASSES_TO_IGNORE_UPDATE_DATABASE = 10;
 
-	private Configuration hibernateConfiguration;
+	private Set<Class> classToPersist = new HashSet<>();;
 
 	private static String directory, outputFile, user, password, host, port, databaseName;
-	private static String[] packetsToScan, scriptsToAdd, classesToIgnoreWhenCreatingDatabase,
-			classesToIgnoreWhenUpdatingDatabase;
+	private static String[] packetsToScan, scriptsToAdd, classesToIgnoreWhenCreatingDatabase, classesToIgnoreWhenUpdatingDatabase;
 
 	public JpaSchemaExporter(String[] packagesName, String[] classesToIgnore) {
-		hibernateConfiguration = new Configuration();
 		try {
 			Set<Class> classes = new HashSet<>();
 			// Get classes in project.
@@ -71,12 +72,11 @@ public class JpaSchemaExporter {
 
 			// Add to hibernate configuration.
 			for (Class clazz : classes) {
-				hibernateConfiguration.addAnnotatedClass(clazz);
+				classToPersist.add(clazz);
 			}
 
 			if (!classesToRemove.isEmpty()) {
-				ExporterLogger.warning(JpaSchemaExporter.class.getName(), "Classes '" + classesToRemove
-						+ "' not found in packet. Not ignored.");
+				ExporterLogger.warning(JpaSchemaExporter.class.getName(), "Classes '" + classesToRemove + "' not found in packet. Not ignored.");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -106,8 +106,7 @@ public class JpaSchemaExporter {
 			}
 		} catch (NullPointerException ex) {
 			ex.printStackTrace();
-			throw new ClassNotFoundException(packageName + " (" + directory
-					+ ") does not appear to be a valid package.");
+			throw new ClassNotFoundException(packageName + " (" + directory + ") does not appear to be a valid package.");
 		}
 	}
 
@@ -161,8 +160,7 @@ public class JpaSchemaExporter {
 				File subdirectory = new File(directory.getPath() + File.separator + fileName);
 				if (fileName.endsWith(".class")) {
 					// removes the .class extension
-					classes.add(Class.forName(packageName + '.'
-							+ fileName.substring(0, fileName.length() - ".class".length())));
+					classes.add(Class.forName(packageName + '.' + fileName.substring(0, fileName.length() - ".class".length())));
 				} else if (subdirectory.isDirectory()) {
 					// Subpacket.
 					classes.addAll(collectClasses(packageName + '.' + fileName, subdirectory));
@@ -178,29 +176,37 @@ public class JpaSchemaExporter {
 	 * @param dialect
 	 * @param directory
 	 */
-	public void createDatabaseScript(HibernateDialect dialect, String directory, String outputFile, boolean onlyCreation) {
-		hibernateConfiguration.setProperty("hibernate.hbm2ddl.auto", "create");
-		hibernateConfiguration.setProperty("hibernate.dialect", dialect.getDialectClass());
-		hibernateConfiguration.setProperty("hibernate.show_sql", "false");
-		SchemaExport export = new SchemaExport(hibernateConfiguration);
+	public void createDatabaseScript(HibernateDialect dialect, String directory, String outputFile, String host, String port, String username, String password,
+			String databaseName, boolean onlyCreation) {
+		MetadataSources metadata = new MetadataSources(new StandardServiceRegistryBuilder().applySetting("hibernate.hbm2ddl.auto", "create")
+				.applySetting("hibernate.connection.driver_class", dialect.getDriver()).applySetting("hibernate.dialect", dialect.getDialectClass())
+				.applySetting("hibernate.show_sql", "false").applySetting("hibernate.connection.driver_class", dialect.getDriver())
+				.applySetting("hibernate.connection.url", "jdbc:mysql://" + host + ":" + port + "/" + databaseName)
+				.applySetting("hibernate.connection.username", username).applySetting("hibernate.connection.password", password).build());
+
+		for (Class clazz : classToPersist) {
+			metadata.addAnnotatedClass(clazz);
+		}
+
+		SchemaExport export = new SchemaExport();
 		export.setDelimiter(";");
 		export.setOutputFile(directory + File.separator + outputFile);
 		export.setFormat(true);
-		export.execute(false, false, false, onlyCreation);
+		// export.create(EnumSet.of(TargetType.DATABASE),
+		// metadata.buildMetadata());
+		export.execute(EnumSet.of(TargetType.SCRIPT), SchemaExport.Action.CREATE, metadata.buildMetadata());
 	}
 
-	public void updateDatabaseScript(HibernateDialect dialect, String outputDirectory, String host, String port,
-			String username, String password, String databaseName) {
-		hibernateConfiguration.setProperty("hibernate.hbm2ddl.auto", "update");
-		hibernateConfiguration.setProperty("hibernate.dialect", dialect.getDialectClass());
-		hibernateConfiguration.setProperty("hibernate.show_sql", "false");
-		hibernateConfiguration.setProperty("hibernate.connection.driver_class", dialect.getDriver());
-		hibernateConfiguration.setProperty("hibernate.connection.url", "jdbc:mysql://" + host + ":" + port + "/"
-				+ databaseName);
-		hibernateConfiguration.setProperty("hibernate.connection.username", username);
-		hibernateConfiguration.setProperty("hibernate.connection.password", password);
+	public void updateDatabaseScript(HibernateDialect dialect, String outputDirectory, String host, String port, String username, String password,
+			String databaseName) {
 
-		SchemaUpdate update = new SchemaUpdate(hibernateConfiguration);
+		MetadataSources metadata = new MetadataSources(new StandardServiceRegistryBuilder().applySetting("hibernate.hbm2ddl.auto", "update")
+				.applySetting("hibernate.connection.driver_class", dialect.getDriver()).applySetting("hibernate.dialect", dialect.getDialectClass())
+				.applySetting("hibernate.show_sql", "false").applySetting("hibernate.connection.driver_class", dialect.getDriver())
+				.applySetting("hibernate.connection.url", "jdbc:mysql://" + host + ":" + port + "/" + databaseName)
+				.applySetting("hibernate.connection.username", username).applySetting("hibernate.connection.password", password).build());
+
+		SchemaUpdate update = new SchemaUpdate();
 		update.setDelimiter(";");
 
 		File directory = new File(outputDirectory + File.separator + "updates");
@@ -208,38 +214,42 @@ public class JpaSchemaExporter {
 			directory.mkdirs();
 		}
 
-		update.setOutputFile(outputDirectory + File.separator + "updates" + File.separator + "update_"
-				+ dialect.name().toLowerCase() + "_" + getDate() + ".sql");
+		update.setOutputFile(outputDirectory + File.separator + "updates" + File.separator + "update_" + dialect.name().toLowerCase() + "_" + getDate()
+				+ ".sql");
 		update.setFormat(true);
-		update.execute(false, true);
+		update.execute(EnumSet.of(TargetType.SCRIPT), metadata.buildMetadata());
 	}
 
 	/**
 	 * For executing.
 	 * 
 	 * @param args
-	 *            args[{@value #ARG_OUTPUT_DIRECTORY}] -> outputDirectory, args[{@value #ARG_OUTPUT_FILE}] ->
-	 *            outputFile, args[{@value #ARG_PACKETS_TO_SCAN}] -> packetsToScan args[{@value #ARG_DATABASE_USER}] ->
-	 *            databaseUser, args[{@value #ARG_DATABASE_PASSWORD}] ->databasePassword, args[
-	 *            {@value #ARG_DATABASE_HOST}] -> databaseHost, args[ {@value #ARG_DATABASE_PORT}] -> databasePort,
-	 *            args[ {@value #ARG_CLASSES_TO_IGNORE_CREATE_DATABASE}] -> ignoreClassesCreating, args[
-	 *            {@value #ARG_CLASSES_TO_IGNORE_UPDATE_DATABASE}] -> ignoreClassesUpdates
+	 *            args[{@value #ARG_OUTPUT_DIRECTORY}] -> outputDirectory, args[
+	 *            {@value #ARG_OUTPUT_FILE}] -> outputFile, args[
+	 *            {@value #ARG_PACKETS_TO_SCAN}] -> packetsToScan args[
+	 *            {@value #ARG_DATABASE_USER}] -> databaseUser, args[
+	 *            {@value #ARG_DATABASE_PASSWORD}] ->databasePassword, args[
+	 *            {@value #ARG_DATABASE_HOST}] -> databaseHost, args[
+	 *            {@value #ARG_DATABASE_PORT}] -> databasePort, args[
+	 *            {@value #ARG_CLASSES_TO_IGNORE_CREATE_DATABASE}] ->
+	 *            ignoreClassesCreating, args[
+	 *            {@value #ARG_CLASSES_TO_IGNORE_UPDATE_DATABASE}] ->
+	 *            ignoreClassesUpdates
 	 */
 	public static void main(String[] args) {
 		setArguments(args);
 
 		// Launch the JpaSchemaExporter
 		JpaSchemaExporter gen = new JpaSchemaExporter(getPacketsToScan(), getClassesToIgnoreWhenCreatingDatabase());
-		gen.createDatabaseScript(HibernateDialect.MYSQL, getDirectory(), getOutputFile(), true);
+		gen.createDatabaseScript(HibernateDialect.MYSQL, getDirectory(), getHost(), getPort(), getUser(), getPassword(), getDatabaseName(), getOutputFile(),
+				true);
 		gen = new JpaSchemaExporter(getPacketsToScan(), getClassesToIgnoreWhenUpdatingDatabase());
-		gen.updateDatabaseScript(HibernateDialect.MYSQL, getDirectory(), getHost(), getPort(), getUser(),
-				getPassword(), getDatabaseName());
+		gen.updateDatabaseScript(HibernateDialect.MYSQL, getDirectory(), getHost(), getPort(), getUser(), getPassword(), getDatabaseName());
 
 		// Add hibernate sequence table.
 		addTextToFile(createHibernateSequenceTable(), getDirectory() + File.separator + getOutputFile());
 		// Add extra information from a external script.
-		addTextToFile(readFile(getScriptsToAdd(), Charset.forName("UTF-8")), getDirectory() + File.separator
-				+ getOutputFile());
+		addTextToFile(readFile(getScriptsToAdd(), Charset.forName("UTF-8")), getDirectory() + File.separator + getOutputFile());
 	}
 
 	protected static void setArguments(String[] args) {
@@ -299,19 +309,15 @@ public class JpaSchemaExporter {
 		}
 
 		if (args.length <= ARG_CLASSES_TO_IGNORE_CREATE_DATABASE) {
-			classesToIgnoreWhenCreatingDatabase = ConfigurationReader.getInstance()
-					.getClassesToIgnoreCreatingDatabase();
+			classesToIgnoreWhenCreatingDatabase = ConfigurationReader.getInstance().getClassesToIgnoreCreatingDatabase();
 		} else {
-			classesToIgnoreWhenCreatingDatabase = StringConverter
-					.convertToArray(args[ARG_CLASSES_TO_IGNORE_CREATE_DATABASE]);
+			classesToIgnoreWhenCreatingDatabase = StringConverter.convertToArray(args[ARG_CLASSES_TO_IGNORE_CREATE_DATABASE]);
 		}
 
 		if (args.length <= ARG_CLASSES_TO_IGNORE_UPDATE_DATABASE) {
-			classesToIgnoreWhenUpdatingDatabase = ConfigurationReader.getInstance()
-					.getClassesToIgnoreUpdatingDatabase();
+			classesToIgnoreWhenUpdatingDatabase = ConfigurationReader.getInstance().getClassesToIgnoreUpdatingDatabase();
 		} else {
-			classesToIgnoreWhenUpdatingDatabase = StringConverter
-					.convertToArray(args[ARG_CLASSES_TO_IGNORE_UPDATE_DATABASE]);
+			classesToIgnoreWhenUpdatingDatabase = StringConverter.convertToArray(args[ARG_CLASSES_TO_IGNORE_UPDATE_DATABASE]);
 		}
 	}
 
@@ -343,14 +349,14 @@ public class JpaSchemaExporter {
 
 			File fileResource = new File(file);
 			while (!fileResource.exists()) {
-				// If this class is in a library, in testing the resources file is the home of the project. Add the
+				// If this class is in a library, in testing the resources file
+				// is the home of the project. Add the
 				// complete path.
 				if (file.indexOf('/') == -1) {
 					break;
 				}
 				fileResource = new File(file.substring(file.indexOf('/') + 1, file.length()));
-				ExporterLogger.warning(JpaSchemaExporter.class.getName(), "'" + file + "' not found! Using '"
-						+ fileResource.getAbsolutePath() + "' instead.");
+				ExporterLogger.warning(JpaSchemaExporter.class.getName(), "'" + file + "' not found! Using '" + fileResource.getAbsolutePath() + "' instead.");
 			}
 			try (Scanner scanner = new Scanner(fileResource)) {
 				while (scanner.hasNextLine()) {
@@ -371,10 +377,6 @@ public class JpaSchemaExporter {
 		} catch (IOException e) {
 			ExporterLogger.errorMessage(JpaSchemaExporter.class.getName(), e);
 		}
-	}
-
-	protected Configuration getHibernateConfiguration() {
-		return hibernateConfiguration;
 	}
 
 	protected Class getSchemaExporterClass() {
@@ -427,6 +429,10 @@ public class JpaSchemaExporter {
 
 	public static void setPacketsToScan(String[] packetsToScan) {
 		JpaSchemaExporter.packetsToScan = packetsToScan;
+	}
+
+	public Set<Class> getClassToPersist() {
+		return classToPersist;
 	}
 
 }

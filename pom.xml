@@ -4,30 +4,10 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.biit</groupId>
 	<artifactId>jpa-schema-exporter</artifactId>
-	<version>0.3.32-SNAPSHOT</version>
+	<version>0.4.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>JPA Schema Exporter</name>
 	<description>Creates a Script for Exporting the Tables created by Hibernate</description>
-
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<java.jdk.version>7</java.jdk.version>
-		<maven-surefire.version>2.17</maven-surefire.version>
-		<maven-compiler-plugin.version>3.2</maven-compiler-plugin.version>
-		<maven-resources-plugin.version>2.7</maven-resources-plugin.version>
-		<org.testng.version>6.8.8</org.testng.version>
-		<hibernate.version>4.3.8.Final</hibernate.version>
-		<biit-common-utils.version>[0.4,0.5)</biit-common-utils.version>
-		<maven-release-plugin.version>2.5.1</maven-release-plugin.version>
-		<maven-scm-provider-gitexe.version>1.9.2</maven-scm-provider-gitexe.version>
-		<project.scm.id>git</project.scm.id>
-	</properties>
-
-	<scm>
-		<connection>scm:git:git.biit-solutions.com:BiiTSchemaExporter.git</connection>
-		<developerConnection>scm:git:git.biit-solutions.com:BiiTSchemaExporter.git</developerConnection>
-		<tag>jpa-schema-exporter</tag>
-	</scm>
 
 	<distributionManagement>
 		<repository>
@@ -35,7 +15,35 @@
 			<name>libs-releases</name>
 			<url>https://dev.biit-solutions.com/artifactory/libs-release</url>
 		</repository>
+		<snapshotRepository>
+			<id>snapshots</id>
+			<name>libs-snapshot</name>
+			<url>https://dev.biit-solutions.com/artifactory/libs-snapshot</url>
+		</snapshotRepository>
 	</distributionManagement>
+
+	<scm>
+		<connection>scm:git:git.biit-solutions.com:BiiTSchemaExporter.git</connection>
+		<developerConnection>scm:git:git.biit-solutions.com:BiiTSchemaExporter.git</developerConnection>
+		<tag>jpa-schema-exporter</tag>
+	</scm>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<java.jdk.version>8</java.jdk.version>
+		<maven-surefire.version>2.19.1</maven-surefire.version>
+		<maven-compiler-plugin.version>3.2</maven-compiler-plugin.version>
+		<maven-resources-plugin.version>2.7</maven-resources-plugin.version>
+		<org.testng.version>6.8.8</org.testng.version>
+		<hibernate.version>5.2.17.Final</hibernate.version>
+		<maven-release-plugin.version>2.5.1</maven-release-plugin.version>
+		<maven-scm-provider-gitexe.version>1.9.2</maven-scm-provider-gitexe.version>
+		<project.scm.id>git</project.scm.id>
+		<mysql.version>5.1.27</mysql.version>
+		<!-- BiiT dependencies -->
+		<biit-common-utils.version>[0.4,0.5)</biit-common-utils.version>
+	</properties>
+
 
 	<dependencies>
 		<!-- File access and logger -->
@@ -55,6 +63,12 @@
 			<groupId>org.testng</groupId>
 			<artifactId>testng</artifactId>
 			<version>${org.testng.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>${mysql.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
