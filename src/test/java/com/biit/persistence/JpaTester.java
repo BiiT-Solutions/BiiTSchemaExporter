@@ -35,7 +35,7 @@ public class JpaTester {
 
 		// Launch the JpaSchemaExporter
 		JpaSchemaExporter gen = new JpaSchemaExporter(packetsToScan, classesToIgnoreWhenCreatingDatabase);
-		gen.createDatabaseScript(HibernateDialect.MYSQL, directory, outputFile, true);
+		gen.createDatabaseScript(HibernateDialect.MYSQL, directory, outputFile, host, port, user, password, databaseName, true);
 		gen = new JpaSchemaExporter(packetsToScan, classesToIgnoreWhenUpdatingDatabase);
 		gen.updateDatabaseScript(HibernateDialect.MYSQL, directory, host, port, user, password, databaseName);
 	}

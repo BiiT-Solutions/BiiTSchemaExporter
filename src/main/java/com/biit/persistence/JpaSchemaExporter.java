@@ -176,9 +176,13 @@ public class JpaSchemaExporter {
 	 * @param dialect
 	 * @param directory
 	 */
-	public void createDatabaseScript(HibernateDialect dialect, String directory, String outputFile, boolean onlyCreation) {
+	public void createDatabaseScript(HibernateDialect dialect, String directory, String outputFile, String host, String port, String username, String password,
+			String databaseName, boolean onlyCreation) {
 		MetadataSources metadata = new MetadataSources(new StandardServiceRegistryBuilder().applySetting("hibernate.hbm2ddl.auto", "create")
-				.applySetting("hibernate.dialect", dialect.getDialectClass()).applySetting("hibernate.show_sql", "false").build());
+				.applySetting("hibernate.connection.driver_class", dialect.getDriver()).applySetting("hibernate.dialect", dialect.getDialectClass())
+				.applySetting("hibernate.show_sql", "false").applySetting("hibernate.connection.driver_class", dialect.getDriver())
+				.applySetting("hibernate.connection.url", "jdbc:mysql://" + host + ":" + port + "/" + databaseName)
+				.applySetting("hibernate.connection.username", username).applySetting("hibernate.connection.password", password).build());
 
 		for (Class clazz : classToPersist) {
 			metadata.addAnnotatedClass(clazz);
@@ -188,15 +192,17 @@ public class JpaSchemaExporter {
 		export.setDelimiter(";");
 		export.setOutputFile(directory + File.separator + outputFile);
 		export.setFormat(true);
-		export.create(EnumSet.of(TargetType.DATABASE), metadata.buildMetadata());
+		// export.create(EnumSet.of(TargetType.DATABASE),
+		// metadata.buildMetadata());
+		export.execute(EnumSet.of(TargetType.SCRIPT), SchemaExport.Action.CREATE, metadata.buildMetadata());
 	}
 
 	public void updateDatabaseScript(HibernateDialect dialect, String outputDirectory, String host, String port, String username, String password,
 			String databaseName) {
-		
+
 		MetadataSources metadata = new MetadataSources(new StandardServiceRegistryBuilder().applySetting("hibernate.hbm2ddl.auto", "update")
-				.applySetting("hibernate.dialect", dialect.getDialectClass()).applySetting("hibernate.show_sql", "false")
-				.applySetting("hibernate.connection.driver_class", dialect.getDriver())
+				.applySetting("hibernate.connection.driver_class", dialect.getDriver()).applySetting("hibernate.dialect", dialect.getDialectClass())
+				.applySetting("hibernate.show_sql", "false").applySetting("hibernate.connection.driver_class", dialect.getDriver())
 				.applySetting("hibernate.connection.url", "jdbc:mysql://" + host + ":" + port + "/" + databaseName)
 				.applySetting("hibernate.connection.username", username).applySetting("hibernate.connection.password", password).build());
 
@@ -211,7 +217,7 @@ public class JpaSchemaExporter {
 		update.setOutputFile(outputDirectory + File.separator + "updates" + File.separator + "update_" + dialect.name().toLowerCase() + "_" + getDate()
 				+ ".sql");
 		update.setFormat(true);
-		update.execute(EnumSet.of(TargetType.DATABASE), metadata.buildMetadata());
+		update.execute(EnumSet.of(TargetType.SCRIPT), metadata.buildMetadata());
 	}
 
 	/**
@@ -235,7 +241,8 @@ public class JpaSchemaExporter {
 
 		// Launch the JpaSchemaExporter
 		JpaSchemaExporter gen = new JpaSchemaExporter(getPacketsToScan(), getClassesToIgnoreWhenCreatingDatabase());
-		gen.createDatabaseScript(HibernateDialect.MYSQL, getDirectory(), getOutputFile(), true);
+		gen.createDatabaseScript(HibernateDialect.MYSQL, getDirectory(), getHost(), getPort(), getUser(), getPassword(), getDatabaseName(), getOutputFile(),
+				true);
 		gen = new JpaSchemaExporter(getPacketsToScan(), getClassesToIgnoreWhenUpdatingDatabase());
 		gen.updateDatabaseScript(HibernateDialect.MYSQL, getDirectory(), getHost(), getPort(), getUser(), getPassword(), getDatabaseName());
 
