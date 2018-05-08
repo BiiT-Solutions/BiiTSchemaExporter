@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.biit</groupId>
 	<artifactId>jpa-schema-exporter</artifactId>
-	<version>0.3.27-SNAPSHOT</version>
+	<version>0.4.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>JPA Schema Exporter</name>
 	<description>Creates a Script for Exporting the Tables created by Hibernate</description>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<java.jdk.version>7</java.jdk.version>
-		<maven-surefire.version>2.17</maven-surefire.version>
-		<maven-compiler-plugin.version>3.2</maven-compiler-plugin.version>
-		<maven-resources-plugin.version>2.7</maven-resources-plugin.version>
-		<org.testng.version>6.8.8</org.testng.version>
-		<hibernate.version>4.3.8.Final</hibernate.version>
-		<biit-common-utils.version>[0.4,0.5)</biit-common-utils.version>
-		<maven-release-plugin.version>2.5.1</maven-release-plugin.version>
-		<maven-scm-provider-gitexe.version>1.9.2</maven-scm-provider-gitexe.version>
-		<project.scm.id>git</project.scm.id>
-	</properties>
+	<distributionManagement>
+		<repository>
+			<id>central</id>
+			<name>libs-releases</name>
+			<url>https://dev.biit-solutions.com/artifactory/libs-release</url>
+		</repository>
+		<snapshotRepository>
+			<id>snapshots</id>
+			<name>libs-snapshot</name>
+			<url>https://dev.biit-solutions.com/artifactory/libs-snapshot</url>
+		</snapshotRepository>
+	</distributionManagement>
 
 	<scm>
 		<connection>scm:git:git.biit-solutions.com:BiiTSchemaExporter.git</connection>
@@ -29,13 +29,23 @@
 		<tag>jpa-schema-exporter</tag>
 	</scm>
 
-	<distributionManagement>
-		<repository>
-			<id>central</id>
-			<name>biit-releases</name>
-			<url>https://git.biit-solutions.com:8443/artifactory/ext-release-local</url>
-		</repository>
-	</distributionManagement>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<java.jdk.version>8</java.jdk.version>
+		<maven-surefire.version>2.19.1</maven-surefire.version>
+		<maven-compiler-plugin.version>3.2</maven-compiler-plugin.version>
+		<maven-resources-plugin.version>2.7</maven-resources-plugin.version>
+		<org.testng.version>6.8.8</org.testng.version>
+		<hibernate.version>5.2.17.Final</hibernate.version>
+		<maven-release-plugin.version>2.5.1</maven-release-plugin.version>
+		<maven-scm-provider-gitexe.version>1.9.2</maven-scm-provider-gitexe.version>
+		<project.scm.id>git</project.scm.id>
+		<mysql.version>8.0.11</mysql.version>
+		<!-- BiiT dependencies -->
+		<biit-common-utils.version>[0.4,0.5)</biit-common-utils.version>
+	</properties>
+
+
 
 	<dependencies>
 		<!-- File access and logger -->
@@ -55,6 +65,12 @@
 			<groupId>org.testng</groupId>
 			<artifactId>testng</artifactId>
 			<version>${org.testng.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>${mysql.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
