@@ -3,7 +3,7 @@
 	<test name="JpaSchemaExporter" enabled="true" preserve-order="true">
 		<groups>
 			<run>
-				<include name="jpaTest" />
+				<exclude name="jpaTest" />
 			</run>
 		</groups>
 		<classes>

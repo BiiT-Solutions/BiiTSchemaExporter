@@ -241,7 +241,7 @@ public class JpaSchemaExporter {
 
 		// Launch the JpaSchemaExporter
 		JpaSchemaExporter gen = new JpaSchemaExporter(getPacketsToScan(), getClassesToIgnoreWhenCreatingDatabase());
-		gen.createDatabaseScript(HibernateDialect.MYSQL, getDirectory(), getHost(), getPort(), getUser(), getPassword(), getDatabaseName(), getOutputFile(),
+		gen.createDatabaseScript(HibernateDialect.MYSQL, getDirectory(),  getOutputFile(), getHost(), getPort(), getUser(), getPassword(), getDatabaseName(),
 				true);
 		gen = new JpaSchemaExporter(getPacketsToScan(), getClassesToIgnoreWhenUpdatingDatabase());
 		gen.updateDatabaseScript(HibernateDialect.MYSQL, getDirectory(), getHost(), getPort(), getUser(), getPassword(), getDatabaseName());
