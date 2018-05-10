@@ -247,7 +247,7 @@ public class JpaSchemaExporter {
 		gen.updateDatabaseScript(HibernateDialect.MYSQL, getDirectory(), getHost(), getPort(), getUser(), getPassword(), getDatabaseName());
 
 		// Add hibernate sequence table.
-		addTextToFile(createHibernateSequenceTable(), getDirectory() + File.separator + getOutputFile());
+		//addTextToFile(createHibernateSequenceTable(), getDirectory() + File.separator + getOutputFile());
 		// Add extra information from a external script.
 		addTextToFile(readFile(getScriptsToAdd(), Charset.forName("UTF-8")), getDirectory() + File.separator + getOutputFile());
 	}
