@@ -3,7 +3,7 @@ package com.biit.persistence;
 public enum HibernateDialect {
 	ORACLE("org.hibernate.dialect.Oracle10gDialect", ""),
 
-	MYSQL("org.hibernate.dialect.MySQLDialect", "com.mysql.jdbc.Driver"),
+	MYSQL("org.hibernate.dialect.MySQL57Dialect", "com.mysql.jdbc.Driver"),
 
 	HSQL("org.hibernate.dialect.HSQLDialect", ""),
 
