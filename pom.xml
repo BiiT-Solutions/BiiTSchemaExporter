@@ -41,7 +41,7 @@
 		<project.scm.id>git</project.scm.id>
 		<mysql.version>5.1.27</mysql.version>
 		<!-- BiiT dependencies -->
-		<biit-common-utils.version>[0.4,0.5)</biit-common-utils.version>
+		<biit-common-utils.version>[1.0,1.1)</biit-common-utils.version>
 	</properties>
 
 
@@ -51,6 +51,7 @@
 			<groupId>com.biit</groupId>
 			<artifactId>common-utils</artifactId>
 			<version>${biit-common-utils.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<!-- Hibernate -->
 		<dependency>
