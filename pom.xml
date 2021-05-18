@@ -23,8 +23,8 @@
 	</distributionManagement>
 
 	<scm>
-		<connection>scm:git:git.biit-solutions.com:BiiTSchemaExporter.git</connection>
-		<developerConnection>scm:git:git.biit-solutions.com:BiiTSchemaExporter.git</developerConnection>
+		<connection>scm:git:git.biit-solutions.com:BiiT/BiiTSchemaExporter.git</connection>
+		<connection>scm:git:git.biit-solutions.com:BiiT/BiiTSchemaExporter.git</developerConnection>
 		<tag>jpa-schema-exporter</tag>
 	</scm>
 
