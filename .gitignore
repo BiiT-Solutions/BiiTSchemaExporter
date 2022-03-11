@@ -18,4 +18,4 @@ release.properties
 
 /create_mysql.sql
 *.iml
-idea
+.idea

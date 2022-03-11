@@ -9,6 +9,13 @@
 	<name>JPA Schema Exporter</name>
 	<description>Creates a Script for Exporting the Tables created by Hibernate</description>
 
+	<parent>
+		<groupId>com.biit</groupId>
+		<artifactId>versions</artifactId>
+		<version>[0.1,0.2)</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+
 	<distributionManagement>
 		<repository>
 			<id>central</id>
@@ -28,48 +35,27 @@
 		<tag>jpa-schema-exporter</tag>
 	</scm>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<java.jdk.version>8</java.jdk.version>
-		<maven-surefire.version>2.19.1</maven-surefire.version>
-		<maven-compiler-plugin.version>3.2</maven-compiler-plugin.version>
-		<maven-resources-plugin.version>2.7</maven-resources-plugin.version>
-		<org.testng.version>6.8.8</org.testng.version>
-		<hibernate.version>5.2.17.Final</hibernate.version>
-		<maven-release-plugin.version>2.5.1</maven-release-plugin.version>
-		<maven-scm-provider-gitexe.version>1.9.2</maven-scm-provider-gitexe.version>
-		<project.scm.id>git</project.scm.id>
-		<mysql.version>5.1.27</mysql.version>
-		<!-- BiiT dependencies -->
-		<biit-common-utils.version>[1.1,1.2)</biit-common-utils.version>
-	</properties>
-
 
 	<dependencies>
 		<!-- File access and logger -->
 		<dependency>
 			<groupId>com.biit</groupId>
 			<artifactId>common-utils</artifactId>
-			<version>${biit-common-utils.version}</version>
-			<scope>provided</scope>
 		</dependency>
 		<!-- Hibernate -->
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-core</artifactId>
-			<version>${hibernate.version}</version>
 		</dependency>
 		<!-- Testing -->
 		<dependency>
 			<groupId>org.testng</groupId>
 			<artifactId>testng</artifactId>
-			<version>${org.testng.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
-			<version>${mysql.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -83,7 +69,7 @@
 					<useFile>false</useFile>
 					<trimStackTrace>false</trimStackTrace>
 					<suiteXmlFiles>
-						<suiteXmlFile>src/test/config/testng.xml</suiteXmlFile>
+						<suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
 					</suiteXmlFiles>
 				</configuration>
 			</plugin>
