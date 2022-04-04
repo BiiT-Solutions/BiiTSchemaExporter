@@ -2,35 +2,35 @@ package com.biit.persistence;
 
 import org.testng.annotations.Test;
 
-import com.biit.persistence.configuration.ConfigurationReader;
+import com.biit.persistence.configuration.JpaSchemaExporterConfigurationReader;
 
 @Test(groups = "jpaTest")
 public class JpaTester {
 
 	@Test
 	public void jpaTest() {
-		String directory = ConfigurationReader.getInstance().getOutputDirectory();
+		String directory = JpaSchemaExporterConfigurationReader.getInstance().getOutputDirectory();
 
-		String outputFile = ConfigurationReader.getInstance().getOutputFile();
+		String outputFile = JpaSchemaExporterConfigurationReader.getInstance().getOutputFile();
 
-		String[] packetsToScan = ConfigurationReader.getInstance().getPackageToScan();
+		String[] packetsToScan = JpaSchemaExporterConfigurationReader.getInstance().getPackageToScan();
 
-		String user = ConfigurationReader.getInstance().getDatabaseUser();
+		String user = JpaSchemaExporterConfigurationReader.getInstance().getDatabaseUser();
 
-		String password = ConfigurationReader.getInstance().getDatabasePassword();
+		String password = JpaSchemaExporterConfigurationReader.getInstance().getDatabasePassword();
 
-		String host = ConfigurationReader.getInstance().getDatabaseHost();
+		String host = JpaSchemaExporterConfigurationReader.getInstance().getDatabaseHost();
 
-		String port = ConfigurationReader.getInstance().getDatabasePort();
+		String port = JpaSchemaExporterConfigurationReader.getInstance().getDatabasePort();
 
-		String databaseName = ConfigurationReader.getInstance().getDatabaseName();
+		String databaseName = JpaSchemaExporterConfigurationReader.getInstance().getDatabaseName();
 
 		// String[] scriptsToAdd = ConfigurationReader.getInstance().getScriptsToAdd();
 
-		String[] classesToIgnoreWhenCreatingDatabase = ConfigurationReader.getInstance()
+		String[] classesToIgnoreWhenCreatingDatabase = JpaSchemaExporterConfigurationReader.getInstance()
 				.getClassesToIgnoreCreatingDatabase();
 
-		String[] classesToIgnoreWhenUpdatingDatabase = ConfigurationReader.getInstance()
+		String[] classesToIgnoreWhenUpdatingDatabase = JpaSchemaExporterConfigurationReader.getInstance()
 				.getClassesToIgnoreUpdatingDatabase();
 
 		// Launch the JpaSchemaExporter
