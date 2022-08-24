@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.biit</groupId>
 	<artifactId>jpa-schema-exporter</artifactId>
-	<version>0.5.17-SNAPSHOT</version>
+	<version>0.5.17</version>
 	<packaging>jar</packaging>
 	<name>JPA Schema Exporter</name>
 	<description>Creates a Script for Exporting the Tables created by Hibernate</description>
@@ -32,7 +32,7 @@
 	<scm>
 		<connection>scm:git:git.biit-solutions.com:BiiT/BiiTSchemaExporter.git</connection>
 		<developerConnection>scm:git:git.biit-solutions.com:BiiT/BiiTSchemaExporter.git</developerConnection>
-		<tag>jpa-schema-exporter</tag>
+		<tag>jpa-schema-exporter-0.5.17</tag>
 	</scm>
 
 
