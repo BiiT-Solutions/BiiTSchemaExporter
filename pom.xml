@@ -30,10 +30,28 @@
 	</distributionManagement>
 
 	<scm>
-		<connection>scm:git:git.biit-solutions.com:BiiT/BiiTSchemaExporter.git</connection>
-		<developerConnection>scm:git:git.biit-solutions.com:BiiT/BiiTSchemaExporter.git</developerConnection>
+		<connection>scm:git:git.biit-solutions.com:Java/BiiTSchemaExporter.git</connection>
+		<developerConnection>scm:git:git.biit-solutions.com:Java/BiiTSchemaExporter.git</developerConnection>
 		<tag>jpa-schema-exporter</tag>
 	</scm>
+
+	<properties>
+		<jpaschemaexporter.script.autogeneration.folder>${root.directory}/abcd-release/database
+		</jpaschemaexporter.script.autogeneration.folder>
+		<jpaschemaexporter.script.autogeneration.file>create_mysql.sql</jpaschemaexporter.script.autogeneration.file>
+		<jpaschemaexporter.script.scan.packages>com.biit.persistence.entity
+		</jpaschemaexporter.script.scan.packages>
+		<jpaschemaexporter.script.output.dir>${project.build.directory}</jpaschemaexporter.script.output.dir>
+		<jpaschemaexporter.script.database.user>testuser</jpaschemaexporter.script.database.user>
+		<jpaschemaexporter.script.database.password>asd123</jpaschemaexporter.script.database.password>
+		<jpaschemaexporter.script.database.host>vagrant-mysql.biit-solutions.com
+		</jpaschemaexporter.script.database.host>
+		<jpaschemaexporter.script.database.port>3306</jpaschemaexporter.script.database.port>
+		<jpaschemaexporter.script.database.name>test</jpaschemaexporter.script.database.name>
+		<jpaschemaexporter.script.database.scripts />
+		<jpaschemaexporter.script.database.creation.ignored.classes />
+		<jpaschemaexporter.script.database.update.ignored.classes />
+	</properties>
 
 
 	<dependencies>
@@ -103,6 +121,37 @@
 						<checkModificationExclude>pom.xml</checkModificationExclude>
 					</checkModificationExcludes>
 				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>${maven-antrun-plugin.version}</version>
+				<executions>
+					<execution>
+						<phase>compile</phase>
+						<configuration>
+							<target>
+								<delete file="${jpaschemaexporter.script.autogeneration.folder}/${jpaschemaexporter.script.autogeneration.file}" failonerror="false" />
+								<java fork="false" failonerror="true" classname="com.biit.persistence.JpaSchemaExporter">
+									<arg value="${jpaschemaexporter.script.autogeneration.folder}" />
+									<arg value="${jpaschemaexporter.script.autogeneration.file}" />
+									<arg value="${jpaschemaexporter.script.scan.packages}" />
+									<arg value="${jpaschemaexporter.script.database.user}" />
+									<arg value="${jpaschemaexporter.script.database.password}" />
+									<arg value="${jpaschemaexporter.script.database.host}" />
+									<arg value="${jpaschemaexporter.script.database.port}" />
+									<arg value="${jpaschemaexporter.script.database.name}" />
+									<arg value="${jpaschemaexporter.script.database.scripts}" />
+									<arg value="${jpaschemaexporter.script.database.creation.ignored.classes}" />
+									<arg value="${jpaschemaexporter.script.database.update.ignored.classes}" />
+									<classpath refid="maven.compile.classpath" />
+								</java>
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
