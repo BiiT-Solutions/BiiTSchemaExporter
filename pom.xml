@@ -136,37 +136,37 @@
 					</checkModificationExcludes>
 				</configuration>
 			</plugin>
-<!--			<plugin>-->
-<!--				<artifactId>maven-antrun-plugin</artifactId>-->
-<!--				<version>${maven-antrun-plugin.version}</version>-->
-<!--				<executions>-->
-<!--					<execution>-->
-<!--						<phase>compile</phase>-->
-<!--						<configuration>-->
-<!--							<target>-->
-<!--								<delete file="${jpaschemaexporter.script.autogeneration.folder}/${jpaschemaexporter.script.autogeneration.file}" failonerror="false" />-->
-<!--								<java fork="false" failonerror="true" classname="com.biit.persistence.JpaSchemaExporter">-->
-<!--									<arg value="${jpaschemaexporter.script.autogeneration.folder}" />-->
-<!--									<arg value="${jpaschemaexporter.script.autogeneration.file}" />-->
-<!--									<arg value="${jpaschemaexporter.script.scan.packages}" />-->
-<!--									<arg value="${jpaschemaexporter.script.database.user}" />-->
-<!--									<arg value="${jpaschemaexporter.script.database.password}" />-->
-<!--									<arg value="${jpaschemaexporter.script.database.host}" />-->
-<!--									<arg value="${jpaschemaexporter.script.database.port}" />-->
-<!--									<arg value="${jpaschemaexporter.script.database.name}" />-->
-<!--									<arg value="${jpaschemaexporter.script.database.scripts}" />-->
-<!--									<arg value="${jpaschemaexporter.script.database.creation.ignored.classes}" />-->
-<!--									<arg value="${jpaschemaexporter.script.database.update.ignored.classes}" />-->
-<!--									<classpath refid="maven.compile.classpath" />-->
-<!--								</java>-->
-<!--							</target>-->
-<!--						</configuration>-->
-<!--						<goals>-->
-<!--							<goal>run</goal>-->
-<!--						</goals>-->
-<!--					</execution>-->
-<!--				</executions>-->
-<!--			</plugin>-->
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>${maven-antrun-plugin.version}</version>
+				<executions>
+					<execution>
+						<phase>compile</phase>
+						<configuration>
+							<target>
+								<delete file="${jpaschemaexporter.script.autogeneration.folder}/${jpaschemaexporter.script.autogeneration.file}" failonerror="false" />
+								<java fork="false" failonerror="true" classname="com.biit.persistence.JpaSchemaExporter">
+									<arg value="${jpaschemaexporter.script.autogeneration.folder}" />
+									<arg value="${jpaschemaexporter.script.autogeneration.file}" />
+									<arg value="${jpaschemaexporter.script.scan.packages}" />
+									<arg value="${jpaschemaexporter.script.database.user}" />
+									<arg value="${jpaschemaexporter.script.database.password}" />
+									<arg value="${jpaschemaexporter.script.database.host}" />
+									<arg value="${jpaschemaexporter.script.database.port}" />
+									<arg value="${jpaschemaexporter.script.database.name}" />
+									<arg value="${jpaschemaexporter.script.database.scripts}" />
+									<arg value="${jpaschemaexporter.script.database.creation.ignored.classes}" />
+									<arg value="${jpaschemaexporter.script.database.update.ignored.classes}" />
+									<classpath refid="maven.compile.classpath" />
+								</java>
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>license-maven-plugin</artifactId>
