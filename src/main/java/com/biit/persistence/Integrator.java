@@ -21,28 +21,20 @@ package com.biit.persistence;
  * #L%
  */
 
-public enum HibernateDialect {
-	ORACLE("org.hibernate.dialect.Oracle10gDialect", ""),
+import org.hibernate.boot.Metadata;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.service.spi.SessionFactoryServiceRegistry;
 
-	MYSQL("org.hibernate.dialect.MySQL57Dialect", "com.mysql.jdbc.Driver"),
+public class Integrator implements org.hibernate.integrator.spi.Integrator {
 
-	HSQL("org.hibernate.dialect.HSQLDialect", ""),
+    @Override
+    public void integrate(Metadata metadata, SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry) {
+        HibernateInfoHolder.setMetadata(metadata);
+        HibernateInfoHolder.setSessionFactory(sessionFactory);
+        HibernateInfoHolder.setServiceRegistry(serviceRegistry);
+    }
 
-	H2("org.hibernate.dialect.H2Dialect", "");
-
-	private String dialectClass;
-	private String driver;
-
-	private HibernateDialect(String dialectClass, String driver) {
-		this.dialectClass = dialectClass;
-		this.driver = driver;
-	}
-
-	public String getDialectClass() {
-		return dialectClass;
-	}
-
-	public String getDriver() {
-		return driver;
-	}
+    @Override
+    public void disintegrate(SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry) {
+    }
 }
